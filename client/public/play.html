@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rock Paper Scissors</title>
+    <!-- <link rel="stylesheet" href="http://localhost:3000/src/css/index.css"> -->
+</head>
+<body>
+    <h1 class="room__info">Your current room is: <span id="room__info__id"></span></h1>
+
+    <div class="self__info">
+        <h2>You</h2>
+        <p id="self__info__name"></p>
+    </div>
+
+    <button id="play__button">Play</button>
+    
+    <div class="enemy__info">
+        <h2 class="">Enemy</h2>
+        <p id="enemy__info__name">Nadie</p>
+    </div>
+
+    <form class="room__connection">
+        <label>Room</label>
+        <input type="text" id="room__connection__search">
+        <input type="submit" id="room__connection__join" value="Join Room">
+    </form>
+    <script src="http://localhost:3000/js/play.js" type="module"></script>
+</body>
+</html>
