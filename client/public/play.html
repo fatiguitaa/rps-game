@@ -8,24 +8,47 @@
 </head>
 <body>
     <h1 class="room__info">Your current room is: <span id="room__info__id"></span></h1>
+    <div class="timer">
+        <h2 class="timer__title">Timer</h2>
+        <p class="timer__time">10</p>
+    </div>
 
     <div class="self__info">
         <h2>You</h2>
         <p id="self__info__name"></p>
     </div>
 
+    <div class="choice">
+        <select id="choice__select">
+            <option value="0">Rock</option>
+            <option value="1">Paper</option>
+            <option value="2">Scissors</option>
+        </select>
+
+        <button id="choice__send">Send</button>
+    </div>
+    
+    <div class="result">
+        <h2>Result</h2>
+        <p id="result__text">-</p>
+    </div>
+    
     <button id="play__button">Play</button>
     
     <div class="enemy__info">
         <h2 class="">Enemy</h2>
-        <p id="enemy__info__name">Nadie</p>
+        <p id="enemy__info__name">-</p>
     </div>
 
     <form class="room__connection">
         <label>Room</label>
         <input type="text" id="room__connection__search">
-        <input type="submit" id="room__connection__join" value="Join Room">
+        <input type="submit" id="room__connection__join" value="Join">
+        <button id="room__connection__leave">Leave</button>
     </form>
+
+    <p class="error"></p>
+
     <script src="http://localhost:3000/js/play.js" type="module"></script>
 </body>
 </html>

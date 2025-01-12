@@ -1,17 +1,22 @@
 import { Room } from "./Room.js"
 
-export class PlayerList {
+export class PlayerList extends Array {
     constructor(creator) {
-        this.players = [creator]
+        super()
+        this.push(creator)
     }
 
-    add(player) {
-        if (this.players.length >= Room.MAX_PLAYERS) throw new Error("Room is full.")
+    push(player) {
+        if (this.length >= Room.MAX_PLAYERS) throw new Error("Room is full.")
 
-        this.players.push(player)
+        super.push(player)
     }
 
     remove(player) {
-        const exists = this.players.find(p => p.id === player)
+        const playerIndex = this.findIndex(p => p.id == player.id)
+        
+        if (playerIndex === -1) throw new Error("Player not found.")
+
+        this.splice(playerIndex, 1)
     }
 }
