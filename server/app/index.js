@@ -32,6 +32,12 @@ function createRoom(socket) {
     socket.emit("room-created", {id: room.id})
 }
 
+function deleteRoom(roomId) {
+    const roomIndex = rooms.findIndex(room => room.id == roomId)
+    
+    rooms.splice(roomIndex, 1)
+}
+
 function joinRoom(socket, id) {
     const room = rooms.find(room => room.id == id)
     const player = socket.player
@@ -74,7 +80,7 @@ function joinRoom(socket, id) {
 
 function leaveRoom(socket) {
     const player = socket.player
-    
+
     const room = rooms.find(r => r.id == player.roomId)
 
     if (!room) return socket.emit("error", {error: "Room does not exists."})
@@ -119,10 +125,7 @@ io.on("connection", socket => {
             return socket.emit("error", {error: error.message})
         }
 
-
-        io.to(room.id).emit("match-started", {time: Match.MATCH_TIME})
-
-        console.log(room.match)
+        io.to(room.id).emit("match-started", {matchTime: Match.MATCH_TIME})
 
         setTimeout(() => {
             const winnerId = room.match.finish()
@@ -156,10 +159,14 @@ io.on("connection", socket => {
     })
 
     socket.on("disconnect", () =>{
-        const disconnectedId = socket.player.id
+        const playerId = socket.player.id
         const roomId = socket.player.roomId
 
-        io.to(roomId).emit("room-leaved", {id: disconnectedId})
+        const room = rooms.find(room => room.id === roomId)
+
+        if (room.players.length <= Room.MIN_PLAYERS) return deleteRoom(roomId)
+
+        io.to(roomId).emit("room-leaved", {playerId})
     })
 }) 
 

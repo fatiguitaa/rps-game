@@ -17,7 +17,7 @@ const self = {
 //TODO:
 // function displayRoomInfo() {
 
-// } 
+// }
 
 
 function displaySelfInfo() {
@@ -50,17 +50,26 @@ socket.on("room-joined", (event) => {
     displayEnemyInfo(enemy)
 })
 
-socket.on("room-leaved", ({id}) => {
+socket.on("room-leaved", ({playerId}) => {
     displayEnemyInfo()
 })
 
-socket.on("match-started", () => {
-    let seconds = 10
+socket.on("match-started", ({matchTime}) => {
+    $("#result__text").textContent = "-"
+
+    let seconds = matchTime / 1000
 
     const timer = setInterval(() => {
-        $(".timer__time").textContent = seconds
         seconds--
-        if (seconds <= 0) clearInterval(timer)
+
+        if (seconds < 0) {
+            clearInterval(timer)
+            $(".timer__time").textContent = 10
+            return;
+        }
+
+        $(".timer__time").textContent = seconds;
+        
     }, 1000);
 })
 
