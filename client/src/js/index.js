@@ -1,11 +1,6 @@
 
 import {$, $$} from "./utils/domUtils.js"
 
-// const showError = function(message) {
-//     $(".login__error").textContent = message
-//     $(".login__error").classList.remove("hidden")
-// }
-
 $("#login__submit").addEventListener("click", async function(event) {
     event.preventDefault()
 

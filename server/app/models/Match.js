@@ -1,64 +1,24 @@
-import { Movement } from "./Movement.js"
-import { MovementList } from "./MovementList.js"
+import { Round } from "./Round.js"
 
 export class Match {
-    static MATCH_TIME = 10000 // 10 seconds
+    // static ROUND_TIME = 10000 // 10 seconds
+    static MAX_ROUNDS = 6
 
     constructor() {
         this.started = false
-        this.movements = new MovementList()
+        this.rounds = new Array(new Round(), new Round(), new Round(), new Round(), new Round(), new Round(), new Round())
+        this.currentRoundIndex = 0
     }
 
-    winner() {
-        let winnerId
+    playRound() {
+        if (this.roundsPlayed >= Match.MAX_ROUNDS) throw new Error("Max rounds reached.")
 
-        const player1Movement = this.movements[0]
-        const player2Movement = this.movements[1]
-
-        if (!player1Movement) {
-            return undefined
-        }
-
-        if (player1Movement && !player2Movement){
-            winnerId = player1Movement.playerId
-        }
-        else if (player1Movement.choiceId == Movement.ROCK && player2Movement.choiceId == Movement.SCISSORS){
-            winnerId = player1Movement.playerId
-        }
-        else if (player1Movement.choiceId == Movement.PAPER && player2Movement.choiceId == Movement.ROCK){
-            winnerId = player1Movement.playerId
-        }
-        else if (player1Movement.choiceId == Movement.SCISSORS && player2Movement.choiceId == Movement.PAPER){
-            winnerId = player1Movement.playerId
-        }
-
-        else if (player2Movement.choiceId == Movement.ROCK && player1Movement.choiceId == Movement.SCISSORS){
-            winnerId = player2Movement.playerId
-        }
-        else if (player2Movement.choiceId == Movement.PAPER && player1Movement.choiceId == Movement.ROCK){
-            winnerId = player2Movement.playerId
-        }
-        else if (player2Movement.choiceId == Movement.SCISSORS && player1Movement.choiceId == Movement.PAPER){
-            winnerId = player2Movement.playerId
-        }
-
-        else {
-            winnerId = undefined
-        }
-
-        return winnerId
-    }
-
-    finish() {
-        this.started = false
-        const winnerId = this.winner()
-        this.movements = []
-
-        return winnerId
+        this.currentRoundIndex++
     }
 
     start() {
         if (this.started) throw new Error("Match has already started.")
+        
         this.started = true
     }
 }

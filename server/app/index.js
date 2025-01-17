@@ -6,8 +6,10 @@ import { Player } from "./models/Player.js"
 import cookieParser from "cookie-parser"
 
 import { Room } from "./models/Room.js"
-import { Match } from "./models/Match.js"
 import { Movement } from "./models/Movement.js"
+import { Match } from "./models/Match.js"
+import { Round } from "./models/Round.js"
+import { match } from "node:assert"
 
 const app = express()
 const server = createServer(app)
@@ -116,46 +118,61 @@ io.on("connection", socket => {
     })
 
     socket.on("match-start", () => {
-        const room = rooms.find(room => room.id === socket.player.roomId)
+        const player = socket.player
+        const room = rooms.find(room => room.id === player.roomId)
+        const match = room.match
 
         try {
-            if (room.players.length !== Room.MAX_PLAYERS) throw new Error("There is not enough players to play.")
-            room.match.start()
+            if (room.players.length < Room.MAX_PLAYERS) throw new Error("There is not enough players to play.")
+            
+            // match.start()
+            let roundIndex = 0
+            console.log("hola")
+
+            const roundInterval = setInterval(() => {
+                const currentRound = match.rounds[roundIndex]
+
+                console.log(match)
+
+                clearInterval(roundInterval)
+            }, Round.ROUND_TIME);
+
+            console.log("chay")
+            // setInterval(() => {
+            //     match.playRound()
+
+            //     io.to(room.id).emit("round-started", {roundNumber: match.currentRoundIndex, roundTime: Round.ROUND_TIME})
+
+            // }, Round.ROUND_TIME);
+
         } catch (error) {
-            return socket.emit("error", {error: error.message})
+            socket.emit("error", {error: error.message})
+            console.log(error)
         }
 
-        io.to(room.id).emit("match-started", {matchTime: Match.MATCH_TIME})
+        
 
-        setTimeout(() => {
-            const winnerId = room.match.finish()
-
-            if (winnerId === undefined) return io.to(room.id).emit("match-tied")
-
-            const loserId = room.players.find(player => player.id !== winnerId).id
-
-            io.to(winnerId).emit("match-won")
-
-            io.to(loserId).emit("match-lost")
-
-            io.to(room.id).emit("match-finished")
-
-        }, Match.MATCH_TIME);
+        
     })
 
-    socket.on("match-movement", (choiceId) => {
+    socket.on("round-movement", (choiceId) => {
         const room = rooms.find(room => room.id === socket.player.roomId)
+        const match = room.match
 
-        if (!room.match.started) return socket.emit("error", {
+
+        if (!match.started) return socket.emit("error", {
             error: "Match has not started yet."
         })
 
+        const currentRound = match.rounds[match.currentRoundIndex]
+        const player = socket.player
+
         try {
-            room.match.movements.push(new Movement(socket.player.id, choiceId))
+            currentRound.movements.push(new Movement(player.id, choiceId))
         } catch (error) {
             socket.emit("error", {error: error.message})
         }
-
+        
     })
 
     socket.on("disconnect", () =>{

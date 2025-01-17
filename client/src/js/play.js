@@ -19,7 +19,6 @@ const self = {
 
 // }
 
-
 function displaySelfInfo() {
     $("#self__info__name").textContent = self.name
 }
@@ -54,10 +53,10 @@ socket.on("room-leaved", ({playerId}) => {
     displayEnemyInfo()
 })
 
-socket.on("match-started", ({matchTime}) => {
+socket.on("round-started", ({roundNumber, roundTime}) => {
     $("#result__text").textContent = "-"
 
-    let seconds = matchTime / 1000
+    let seconds = roundTime / 1000
 
     const timer = setInterval(() => {
         seconds--
@@ -70,11 +69,12 @@ socket.on("match-started", ({matchTime}) => {
 
         $(".timer__time").textContent = seconds;
         
-    }, 1000);
+    }, 1000)
 })
 
-socket.on("match-finished", () => {
-    // TODO: Awesome final animation
+socket.on("round-won", () => {
+    console.log("ROUND WON")
+    $("#result__text").textContent = "Round Won"
 })
 
 socket.on("match-won", () => {
@@ -90,6 +90,8 @@ socket.on("match-tied", () => {
 })
  
 socket.on("error", ({error}) => {
+    console.log(error)
+
     $(".error").textContent = error
 
     setTimeout(() => {
@@ -122,7 +124,7 @@ $("#play__button").addEventListener("click", () => {
 $("#choice__send").addEventListener("click", () => { 
     const choiceId = $("#choice__select").value
 
-    socket.emit("match-movement", choiceId)
+    socket.emit("round-movement", choiceId)
 })
 
 $("#room__connection__leave").addEventListener("click", (event) => {
