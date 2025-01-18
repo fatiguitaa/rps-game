@@ -54,7 +54,7 @@ socket.on("room-leaved", ({playerId}) => {
 })
 
 socket.on("round-started", ({roundNumber, roundTime}) => {
-    $("#result__text").textContent = "-"
+    // $("#result__text").textContent = "-"
 
     let seconds = roundTime / 1000
 
@@ -72,26 +72,33 @@ socket.on("round-started", ({roundNumber, roundTime}) => {
     }, 1000)
 })
 
+
 socket.on("round-won", () => {
-    console.log("ROUND WON")
-    $("#result__text").textContent = "Round Won"
+    $("#rounds__result").textContent = "Round won"
 })
 
+socket.on("round-tied", () => {
+    $("#rounds__result").textContent = "Round tied"
+})
+
+socket.on("round-lost", () => {
+    $("#rounds__result").textContent = "Round lost"
+})
+
+
 socket.on("match-won", () => {
-    $("#result__text").textContent = "Won"
+    $("#match__result").textContent = "Match won"
+})
+
+socket.on("match-tied", () => {
+    $("#match__result").textContent = "Match tied"
 })
 
 socket.on("match-lost", () => {
-    $("#result__text").textContent = "Lost"
-})
-
-socket.on("match-tied", () => { 
-    $("#result__text").textContent = "Tie"
+    $("#match__result").textContent = "Match lost"
 })
  
 socket.on("error", ({error}) => {
-    console.log(error)
-
     $(".error").textContent = error
 
     setTimeout(() => {

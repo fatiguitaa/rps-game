@@ -7,7 +7,10 @@
     <!-- <link rel="stylesheet" href="http://localhost:3000/src/css/index.css"> -->
 </head>
 <body>
-    <h1 class="room__info">Your current room is: <span id="room__info__id"></span></h1>
+    <h1>Rock, paper, scissors game!</h1>
+    <div class="room__info">
+        <h2>Your current room is: <span id="room__info__id"></span></h2>
+    </div>
     <div class="timer">
         <h2 class="timer__title">Timer</h2>
         <p class="timer__time">10</p>
@@ -28,9 +31,14 @@
         <button id="choice__send">Send</button>
     </div>
     
-    <div class="result">
-        <h2>Result</h2>
-        <p id="result__text">-</p>
+    <div class="rounds">
+        <h2>Rounds</h2>
+        <p id="rounds__result">-</p>
+    </div>
+
+    <div class="match">
+        <h2>Match</h2>
+        <p id="match__result">-</p>
     </div>
     
     <button id="play__button">Play</button>
