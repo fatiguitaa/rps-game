@@ -192,6 +192,7 @@ io.on("connection", socket => {
     })
 }) 
 
+app.use("/svg", express.static(path.join(process.cwd(), "client", "public", "svg")))
 app.use("/css", express.static(path.join(process.cwd(), "client", "src", "css")))
 app.use("/js", express.static(path.join(process.cwd(), "client", "src", "js")))
 app.use(express.json())

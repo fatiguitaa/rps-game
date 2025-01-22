@@ -4,17 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rock Paper Scissors | Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="http://localhost:3000/css/globals.css">
+    <link rel="stylesheet" href="http://localhost:3000/css/index.css">
 </head>
 <body>
-    <section class="login__panel">
-        <h1>Login</h1>
-        <form class="login__panel__form">
-            <label for="">Username</label>
-            <input type="text" name="username_input" id="login__username">
-            <input type="submit" name="login_submit" id="login__submit" value="Ready">
+    <section class="user__input">
+        <div class="user__input__icon"></div>
+        <h1 class="user__input__title">Rock, paper, scissors game!</h1>
+        <form class="user__input__form">
+
+            <div class="input__container">
+                <input type="text" id="user__input__form__input" class="input__text" placeholder="Username">
+                <label for="user__input__form__input" class="input__label">Username</label>
+            </div>
+            
+            <input type="submit" id="user__input__form__submit" class="button" value="Ready">
         </form>
 
-        <script src="http://localhost:3000/js/index.js" type="module"></script>
     </section>
+
+    <script src="http://localhost:3000/js/index.js" type="module"></script>
 </body>
 </html>

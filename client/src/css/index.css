@@ -1,0 +1,155 @@
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-position: center;
+    background: linear-gradient(90deg, var(--blue) 0%, var(--lightBlue) 100%);
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.user__input {
+    background-color: var(--blue);
+    color: var(--white);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: rgb(0, 0, 0) 0px 5px 15px;
+}
+
+.user__input__icon {
+    width: 8rem;
+    height: 8rem;
+    animation: rps-image steps(1) 5s infinite, rps-movement 5s infinite;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+@keyframes rps-movement {
+    0% {
+        rotate: 0;
+    }
+    16.5% {
+        rotate: -40deg;
+    }
+    33% {
+        rotate: 0deg;
+    }
+    49.5% {
+        rotate: -40deg;
+    }
+    66% {
+        rotate: 0deg;
+    }
+    82.5% {
+        rotate: -40deg;
+    }
+    100% {
+        rotate: 0;
+    }
+}
+
+@keyframes rps-image {
+    0% {
+        background-image: url("http://localhost:3000/svg/rock.svg");
+    }
+    33% {
+        background-image: url("http://localhost:3000/svg/paper.svg");
+    }
+    66% {
+        background-image: url("http://localhost:3000/svg/scissors.svg");
+    }
+    100% {
+        background-image: url("http://localhost:3000/svg/rock.svg");
+    }
+}
+
+.user__input__title {
+    text-align: center;
+}
+
+.user__input__form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.input__container {
+    position: relative;
+    padding: 15px 0 0;
+    margin-top: 10px;
+    width: 100%;
+}
+
+.input__text {
+    width: 100%;
+    border: 0;
+    border-bottom: 2px solid var(--white);
+    outline: 0;
+    font-size: 1.3rem;
+    color: var(--white);
+    padding: 7px 0;
+    background: transparent;
+    transition: border-color 0.2s;
+}
+
+.input__text::placeholder {
+    color: transparent;
+}
+
+.input__text:placeholder-shown ~ .input__label {
+    font-size: 1.3rem;
+    cursor: text;
+    top: 20px;
+}
+
+.input__label {
+    position: absolute;
+    top: 0;
+    display: block;
+    transition: 0.2s;
+    font-size: 1rem;
+    color: var(--white);
+}
+
+.input__text:focus {
+    padding-bottom: 6px;
+    font-weight: 700;
+    border-width: 3px;
+    border-image-slice: 1;
+}
+
+.input__text:focus ~ .input__label {
+    position: absolute;
+    top: 0;
+    display: block;
+    transition: 0.2s;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+
+.button {
+    color:white;
+    background: #1e2759;
+    padding:1.6rem 5rem 1.8rem 5rem;
+    border-radius:5rem;
+    border:5px solid #5978F3;
+    font-size:1.5rem;
+    line-height:1em;
+    letter-spacing:0.075em;
+    transition:background 0.3s;
+    cursor:pointer;
+}
+
+.button:hover {
+    background: #0F1C53;
+}

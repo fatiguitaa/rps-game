@@ -1,0 +1,29 @@
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    --white: #fff;
+    --black: #000;
+    --blue: rgb(73, 61, 243);
+    --lightBlue: rgb(61, 143, 243);
+}
+
+html {
+    font-size: 62.5%; /* 1rem = 10px */
+}
+
+body {
+    box-sizing: border-box;
+    font-size: 1.6rem; /* 1rem = 10px */
+
+    font-family: "Montserrat", serif;
+}
+
+h1, h2, h3, h4 {
+    text-wrap: balance;
+}
+
+label, input {
+    margin-bottom: 1rem;
+}
