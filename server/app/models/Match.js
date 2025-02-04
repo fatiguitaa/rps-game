@@ -1,7 +1,7 @@
 import { Round } from "./Round.js"
 
 export class Match {
-    static MAX_ROUNDS = 6
+    static MAX_ROUNDS = 4
 
     constructor() {
         this.started = false
@@ -21,8 +21,13 @@ export class Match {
 
         this.currentRoundIndex++
 
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             setTimeout(() => {
+                if (!this.started) {
+                    resolve()
+
+                    return
+                }
                 const round = this.rounds[this.currentRoundIndex]
                 
                 const winnerId = round.winner()

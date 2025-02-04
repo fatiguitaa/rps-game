@@ -1,10 +1,10 @@
 
 import {$, $$} from "./utils/domUtils.js"
 
-$("#login__submit").addEventListener("click", async function(event) {
+$("#user__input__form__submit").addEventListener("click", async function(event) {
     event.preventDefault()
 
-    const username = $("#login__username").value
+    const username = $("#user__input__form__input").value
 
     if (!username) return
     
@@ -15,7 +15,7 @@ $("#login__submit").addEventListener("click", async function(event) {
         },
         body: JSON.stringify({name: username})
     }).then(response => {
-        if (response.ok) window.location.href = "http://localhost:3000/play"
+        if (response.ok) window.location.href = "/play"
     })
 
 })

@@ -5,8 +5,13 @@
 :root {
     --white: #fff;
     --black: #000;
-    --blue: rgb(73, 61, 243);
-    --lightBlue: rgb(61, 143, 243);
+    --gray: #bac9db;
+    --blue: #493df3;
+    --lightBlue: #3d8ff3;
+    --red: #ac0f01;
+    --yellow: #ffbf00;
+    --orange: #FF8D21;
+    --green: #008000;
 }
 
 html {
@@ -26,4 +31,85 @@ h1, h2, h3, h4 {
 
 label, input {
     margin-bottom: 1rem;
+}
+
+ul {
+    list-style: none;
+}
+
+.special {
+    font-weight: bold;
+    color: var(--orange);
+}
+
+.input__container {
+    position: relative;
+    padding: 15px 0 0;
+    margin-top: 10px;
+    width: 20rem;
+}
+
+.input__text {
+    width: 100%;
+    border: 0;
+    border-bottom: 2px solid var(--white);
+    outline: 0;
+    font-size: 1.3rem;
+    color: var(--white);
+    padding: 7px 0;
+    background: transparent;
+    transition: border-color 0.2s;
+}
+
+.input__text::placeholder {
+    color: transparent;
+}
+
+.input__text:placeholder-shown ~ .input__label {
+    font-size: 1.3rem;
+    cursor: text;
+    top: 20px;
+}
+
+.input__label {
+    position: absolute;
+    top: 0;
+    display: block;
+    transition: 0.2s;
+    font-size: 1rem;
+    color: var(--white);
+}
+
+.input__text:focus {
+    padding-bottom: 6px;
+    font-weight: 700;
+    border-width: 3px;
+    border-image-slice: 1;
+}
+
+.input__text:focus ~ .input__label {
+    position: absolute;
+    top: 0;
+    display: block;
+    transition: 0.2s;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.button {
+    color:white;
+    background: #1e2759;
+    padding:1.6rem 5rem 1.8rem 5rem;
+    border-radius:5rem;
+    border:5px solid #5978F3;
+    font-size:1.5rem;
+    line-height:1em;
+    letter-spacing:0.075em;
+    cursor:pointer;
+    min-width: 15rem;
+    text-align: center;
+}
+
+.button:hover {
+    background: #0F1C53;
 }

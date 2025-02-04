@@ -4,58 +4,82 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rock Paper Scissors</title>
-    <!-- <link rel="stylesheet" href="http://localhost:3000/src/css/index.css"> -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="http://localhost:3000/css/globals.css">
+    <link rel="stylesheet" href="http://localhost:3000/css/play.css">
 </head>
 <body>
-    <h1>Rock, paper, scissors game!</h1>
-    <div class="room__info">
-        <h2>Your current room is: <span id="room__info__id"></span></h2>
-    </div>
-    <div class="timer">
-        <h2 class="timer__title">Timer</h2>
-        <p class="timer__time">10</p>
-    </div>
+    <div class="match__result"><h2 class="match__result__title"></h2></div>
 
-    <div class="self__info">
-        <h2>You</h2>
-        <p id="self__info__name"></p>
-    </div>
+    <ul class="messages"></ul>
 
-    <div class="choice">
-        <select id="choice__select">
-            <option value="0">Rock</option>
-            <option value="1">Paper</option>
-            <option value="2">Scissors</option>
-        </select>
-
-        <button id="choice__send">Send</button>
-    </div>
+    <h1 class="title">Rock, paper, scissors game!</h1>
     
-    <div class="rounds">
-        <h2>Rounds</h2>
-        <p id="rounds__result">-</p>
+    <div class="room__info">
+        <h2>Your current room is: <span id="room__info__id" class="special"></span></h2> 
+        <svg id="room__info__copy" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" />
+        </svg>
+        
+    </div>
+
+    <div class="waiting">
+        <p class="waiting__message">Hang on, we are waiting for a player to join <span class="waiting__loader"></span></p> 
+    </div> 
+
+    <div class="enemy">
+        <h2 class="">Enemy</h2>
+        <p id="enemy__name" class="special"></p>
+        <button class="button" id="enemy__play">Play</button>
     </div>
 
     <div class="match">
-        <h2>Match</h2>
-        <p id="match__result">-</p>
-    </div>
-    
-    <button id="play__button">Play</button>
-    
-    <div class="enemy__info">
-        <h2 class="">Enemy</h2>
-        <p id="enemy__info__name">-</p>
+        <div class="match__timer">
+            <p>00:<span class="timer__time special">10</span></p>
+        </div>
+
+        <div class="match__choice">
+            <h2 class="match__choice__title">Make a choice</h2>
+
+            <div class="match__choice__options">
+                <input type="radio" id="rock" name="choices" value="0">
+                <label for="rock">
+                    <img class="choice" src="http://localhost:3000/svg/rock.svg" alt="Rock">
+                </label>
+
+                <input type="radio" id="paper" name="choices" value="1">
+                <label for="paper">
+                    <img class="choice" src="http://localhost:3000/svg/paper.svg" alt="Paper">
+                </label>
+
+                <input type="radio" id="scissors" name="choices" value="2">
+                <label for="scissors">
+                    <img class="choice" src="http://localhost:3000/svg/scissors.svg" alt="Scissors">
+                </label>
+            </div>
+
+            <button id="match__choice__send" class="button">Send</button>
+
+        </div>
+
+        <div class="match__rounds">
+            
+            <h2>Rounds</h2>
+            <ul class="match__rounds__result">
+            </ul>
+
+        </div>
     </div>
 
     <form class="room__connection">
-        <label>Room</label>
-        <input type="text" id="room__connection__search">
-        <input type="submit" id="room__connection__join" value="Join">
-        <button id="room__connection__leave">Leave</button>
+        <div class="input__container">
+            <input type="text" id="room__connection__search" class="input__text" placeholder="Room">
+            <label for="room__connection__search" class="input__label">Room</label>
+        </div>
+        <input class="button" type="submit" id="room__connection__join" value="Join">
     </form>
-
-    <p class="error"></p>
 
     <script src="http://localhost:3000/js/play.js" type="module"></script>
 </body>

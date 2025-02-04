@@ -1,5 +1,5 @@
 import { io } from "https://cdn.socket.io/4.8.1/socket.io.esm.min.js"
-import { $ } from "./utils/domUtils.js"
+import { $, $$ } from "./utils/domUtils.js"
 
 const username = getCookie("username")
 
@@ -14,19 +14,94 @@ const self = {
     name: username
 }
 
-//TODO:
-// function displayRoomInfo() {
+function displayErrorMessage(innerHTML) {
+    const domMessages = $(".messages")
 
-// }
+    const errorMessage = document.createElement("li")
 
-function displaySelfInfo() {
-    $("#self__info__name").textContent = self.name
+    errorMessage.classList.add("error")
+
+    errorMessage.innerHTML = innerHTML
+
+    domMessages.appendChild(errorMessage)
+
+    setTimeout(() => {
+        errorMessage.remove()
+    }, 2000);
+}
+
+function displaySuccessMessage(innerHTML) {
+    const domMessages = $(".messages")
+
+    const succesMessage = document.createElement("li")
+
+    succesMessage.classList.add("success")
+
+    succesMessage.innerHTML = innerHTML
+
+    domMessages.appendChild(succesMessage)
+
+    setTimeout(() => {
+        succesMessage.remove()
+    }, 2000);
 }
 
 function displayEnemyInfo(enemy) {
-    if (!enemy) return $("#enemy__info__name").textContent = "-"
+    $("#enemy__name").textContent = enemy.name
+}
 
-    $("#enemy__info__name").textContent = enemy.name
+function disableChoices() {
+    $$('.match__choice__options input[type="radio"]').forEach((choice) => {
+        choice.disabled = true
+    })
+}
+
+function enableChoices() {
+    $$('.match__choice__options input[type="radio"]').forEach((choice) => {
+        choice.disabled = false
+    })
+}
+
+function matchWon(text) {
+    const matchResultDiv = $(".match__result")
+
+    const matchResultTitle = $(".match__result__title")
+
+    matchResultTitle.textContent = text
+
+    matchResultDiv.classList.add("won")
+
+    setTimeout(() => {
+        $(".match__result").classList.remove("won")
+    }, 3000);
+}
+
+function matchTied(text) {
+    const matchResultDiv = $(".match__result")
+
+    const matchResultTitle = $(".match__result__title")
+
+    matchResultTitle.textContent = text
+
+    matchResultDiv.classList.add("tied")
+
+    setTimeout(() => {
+        $(".match__result").classList.remove("tied")
+    }, 3000);
+}
+
+function matchLost(text) {
+    const matchResultDiv = $(".match__result")
+
+    const matchResultTitle = $(".match__result__title")
+
+    matchResultTitle.textContent = text
+
+    matchResultDiv.classList.add("lost")
+
+    setTimeout(() => {
+        $(".match__result").classList.remove("lost")
+    }, 3000);
 }
 
 socket.on("connect", () => {
@@ -34,27 +109,63 @@ socket.on("connect", () => {
 })
 
 socket.on("room-created", ({id}) => {
-    $("#room__info__id").textContent = id
+    document.body.classList.remove("full")
 
-    displaySelfInfo()
-    displayEnemyInfo()
+    $("#room__info__id").textContent = id
 })
 
 socket.on("room-joined", (event) => {
+    const enemy = event.room.players.find(player => player.id !== self.id)
+
     if (event.player.id === self.id) {
         $("#room__info__id").textContent = event.room.id
+        displaySuccessMessage(`You just joined to room <span class="special">${event.room.id}</span>.`)
     }
-    const enemy = event.room.players.find(player => player.id !== self.id)
+    else {
+        displaySuccessMessage(`Player <span class="special">${enemy.name}</span> just joined.`)
+    }
+
+    document.body.classList.add("full")
 
     displayEnemyInfo(enemy)
 })
 
-socket.on("room-leaved", ({playerId}) => {
-    displayEnemyInfo()
+socket.on("room-leaved", ({name}) => {
+    document.body.classList.remove("full")
+    displayErrorMessage(`Player <span class="special">${name}</span> just leaved.`)
+})
+
+socket.on("match-started", ({totalRounds}) => {
+    const lastMatchRounds = $$(".match__rounds__result .round")
+
+    if (lastMatchRounds) {
+        lastMatchRounds.forEach(round => {
+            round.remove()
+        })
+    }
+
+    for (let i = 0 ; i < totalRounds ; i++) {
+        const roundElement = document.createElement("li")
+
+        roundElement.classList.add("round")
+
+        $(".match__rounds__result").appendChild(roundElement)
+    }
+
 })
 
 socket.on("round-started", ({roundNumber, roundTime}) => {
-    // $("#result__text").textContent = "-"
+    enableChoices()
+
+    const inputChecked = $('input[type="radio"]:checked')
+
+    if (inputChecked) inputChecked.checked = false
+
+    $("#match__choice__send").classList.remove("sent")
+
+    displaySuccessMessage(`Round <span class=special>${roundNumber}</span> started.`)
+
+    document.body.classList.add("started")
 
     let seconds = roundTime / 1000
 
@@ -72,38 +183,39 @@ socket.on("round-started", ({roundNumber, roundTime}) => {
     }, 1000)
 })
 
-
-socket.on("round-won", () => {
-    $("#rounds__result").textContent = "Round won"
+socket.on("round-won", ({roundNumber}) => {
+    $(`.match__rounds__result .round:nth-child(${roundNumber})`).classList.add("won")
 })
 
-socket.on("round-tied", () => {
-    $("#rounds__result").textContent = "Round tied"
+socket.on("round-tied", ({roundNumber}) => {
+    $(`.match__rounds__result .round:nth-child(${roundNumber})`).classList.add("tied")
 })
 
-socket.on("round-lost", () => {
-    $("#rounds__result").textContent = "Round lost"
+socket.on("round-lost", ({roundNumber}) => {
+    $(`.match__rounds__result .round:nth-child(${roundNumber})`).classList.add("lost")
 })
-
 
 socket.on("match-won", () => {
-    $("#match__result").textContent = "Match won"
+    document.body.classList.remove("started")
+    
+    matchWon("You won!")
+    
 })
 
 socket.on("match-tied", () => {
-    $("#match__result").textContent = "Match tied"
+    document.body.classList.remove("started")
+
+    matchTied("Match tied!")
 })
 
 socket.on("match-lost", () => {
-    $("#match__result").textContent = "Match lost"
+    document.body.classList.remove("started")
+
+    matchLost("You lost!")
 })
  
 socket.on("error", ({error}) => {
-    $(".error").textContent = error
-
-    setTimeout(() => {
-        $(".error").textContent = ""
-    }, 3000)
+    displayErrorMessage(error)
 })
 
 function getCookie(name) {
@@ -111,6 +223,16 @@ function getCookie(name) {
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) return parts.pop().split(';').shift();
 }
+
+$("#room__info__copy").addEventListener("click", () => {
+    const roomId = $("#room__info__id").textContent
+
+    navigator.clipboard.writeText(roomId)
+})
+
+$("#enemy__play").addEventListener("click", () => {
+    socket.emit("match-start")
+})
 
 $("#room__connection__join").addEventListener("click", (event) => {
     event.preventDefault()
@@ -124,18 +246,12 @@ $("#room__connection__join").addEventListener("click", (event) => {
     socket.emit("room-join", {id: roomId})
 })
 
-$("#play__button").addEventListener("click", () => {
-    socket.emit("match-start")
-})
-
-$("#choice__send").addEventListener("click", () => { 
-    const choiceId = $("#choice__select").value
+$("#match__choice__send").addEventListener("click", () => {
+    const choiceId = $('input[name="choices"]:checked').value
 
     socket.emit("round-movement", choiceId)
-})
 
-$("#room__connection__leave").addEventListener("click", (event) => {
-    event.preventDefault()
-    
-    socket.emit("room-leave")
+    $("#match__choice__send").classList.add("sent")
+
+    disableChoices()
 })

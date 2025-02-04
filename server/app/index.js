@@ -46,7 +46,8 @@ function joinRoom(socket, id) {
     if (!room) return socket.emit("error", {error: "Room does not exists."})
     else {
         try {
-            if (socket.player.roomId == room.id) throw new Error("You are already in this room.")
+            if (player.roomId == room.id) throw new Error("You are already in this room.")
+            
             const previousRoom = rooms.find(room => room.id == player.roomId)
 
             if (previousRoom.players.length <= Room.MIN_PLAYERS) {
@@ -55,12 +56,17 @@ function joinRoom(socket, id) {
                 rooms.splice(previousRoomIndex, 1)
             }
 
-            room.players.push(socket.player)
+            room.players.push(player)
+            
+            socket.leave(previousRoom.id)
 
-            socket.leave(socket.player.roomId)
             socket.join(room.id)
             
-            player.roomId = room.id
+            player.roomId = id
+
+            if (previousRoom.players.length >= Room.MIN_PLAYERS) {
+                io.to(previousRoom.id).emit("room-leaved", {name: player.name})
+            }
             
             io.to(room.id).emit("room-joined", {
                 room: {
@@ -79,27 +85,25 @@ function joinRoom(socket, id) {
     }
 }
 
-function leaveRoom(socket) {
-    const player = socket.player
+// function leaveRoom(socket) {
+//     const player = socket.player
 
-    const room = rooms.find(r => r.id == player.roomId)
+//     const room = rooms.find(r => r.id == player.roomId)
 
-    if (!room) return socket.emit("error", {error: "Room does not exists."})
-    
-    try {
-        if (room.players.length <= Room.MIN_PLAYERS) throw new Error("You can not leave the room with only one player.")
+//     try {
+//         if (room.players.length <= Room.MIN_PLAYERS) throw new Error("You can not leave the room with only one player.")
         
-        room.players.remove(player)
+//         room.players.remove(player)
 
-        socket.leave(room.id)
+//         socket.leave(room.id)
 
-        io.to(room.id).emit("room-leaved", {id: player.id})
+//         io.to(room.id).emit("room-leaved", {name: player.name})
 
-        createRoom(socket)
-    } catch (error) {
-        socket.emit("error", {error: error.message})
-    }
-}
+//         createRoom(socket)
+//     } catch (error) {
+//         socket.emit("error", {error: error.message})
+//     }
+// }
 
 io.on("connection", socket => {
     let name = socket.handshake.auth.username
@@ -112,9 +116,9 @@ io.on("connection", socket => {
         joinRoom(socket, id)
     })
 
-    socket.on("room-leave", () => {
-        leaveRoom(socket)
-    })
+    // socket.on("room-leave", () => {
+    //     createRoom(socket)
+    // })
 
     socket.on("match-start", async () => {
         const player = socket.player
@@ -124,23 +128,29 @@ io.on("connection", socket => {
         try {
             if (room.players.length < Room.MAX_PLAYERS) throw new Error("There is not enough players to play.")
             
+            io.to(room.id).emit("match-started", {totalRounds: Match.MAX_ROUNDS})
             match.start()
 
-            for (let i = 0; i < 1; i++) {
+            for (let i = 0; i < Match.MAX_ROUNDS; i++) {
+                if (!match.started) break
+
                 io.to(room.id).emit("round-started", {roundNumber: i + 1, roundTime: Round.ROUND_TIME})
 
                 const roundWinnerId = await match.playRound()
 
-                if (!roundWinnerId) io.to(room.id).emit("round-tied")
+                if (!roundWinnerId) io.to(room.id).emit("round-tied", {roundNumber: match.currentRoundIndex + 1})
                 
                 else {
                     const roundLoserId = room.players.find(player => player.id !== roundWinnerId).id
 
-                    io.to(roundWinnerId).emit("round-won")
+                    io.to(roundWinnerId).emit("round-won", {roundNumber: match.currentRoundIndex + 1})
                     
-                    io.to(roundLoserId).emit("round-lost")
+                    io.to(roundLoserId).emit("round-lost", {roundNumber: match.currentRoundIndex + 1})
                 }
+
             }
+
+            if (!match.started) return
 
             const matchWinnerId = match.winner(room.players)
             
@@ -155,25 +165,24 @@ io.on("connection", socket => {
             io.to(matchLoserId).emit("match-lost")
 
         } catch (error) {
+            console.log(error)
             socket.emit("error", {error: error.message})
         }
         
     })
 
     socket.on("round-movement", (choiceId) => {
-        const room = rooms.find(room => room.id === socket.player.roomId)
-        const match = room.match
-
-
-        if (!match.started) return socket.emit("error", {
-            error: "Match has not started yet."
-        })
-
-        const currentRound = match.rounds[match.currentRoundIndex]
-        const player = socket.player
-
         try {
+            const room = rooms.find(room => room.id === socket.player.roomId)
+            const match = room.match
+    
+            if (!match.started) throw new Error("Match has not started yet.")
+    
+            const currentRound = match.rounds[match.currentRoundIndex]
+            const player = socket.player
+
             currentRound.movements.push(new Movement(player.id, choiceId))
+
         } catch (error) {
             socket.emit("error", {error: error.message})
         }
@@ -181,14 +190,23 @@ io.on("connection", socket => {
     })
 
     socket.on("disconnect", () =>{
-        const playerId = socket.player.id
-        const roomId = socket.player.roomId
+        const player = socket.player
+        const roomId = player.roomId
 
         const room = rooms.find(room => room.id === roomId)
 
         if (room.players.length <= Room.MIN_PLAYERS) return deleteRoom(roomId)
+        
+        room.players.remove(player)
+        
+        io.to(roomId).emit("room-leaved", {name: player.name})
 
-        io.to(roomId).emit("room-leaved", {playerId})
+        const match = room.match
+
+        if (match.started) {
+            io.to(roomId).emit("match-won")
+            match.finish()
+        }
     })
 }) 
 
@@ -205,11 +223,15 @@ app.get("/", (req, res) => {
 app.get("/play", (req, res) => {
     const { username } = req.cookies
 
-    if (!username) return res.redirect("/")
+    try {
+        Player.validate({name: username})
 
-    // TODO: Validate player name
+        res.sendFile(path.join(process.cwd(), "client", "public", "play.html"))
+    }
+    catch(error) {
+        res.redirect("/")
+    }
 
-    res.sendFile(path.join(process.cwd(), "client", "public", "play.html"))
 })
 
 app.post("/players", (req, res) => {
