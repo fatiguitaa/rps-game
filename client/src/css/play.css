@@ -34,10 +34,6 @@ body {
     background-color: var(--green);
 }
 
-.neutral {
-    background-color: var(--yellow);
-}
-
 .error {
     background-color: var(--red);
 }
@@ -63,6 +59,7 @@ body {
 
 .title {
     font-size: 5rem;
+    margin: 1rem;
 }
 
 .room__info {

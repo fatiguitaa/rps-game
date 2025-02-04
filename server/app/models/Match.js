@@ -24,7 +24,7 @@ export class Match {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 if (!this.started) {
-                    resolve()
+                    reject("A player has abandoned the game.")
 
                     return
                 }

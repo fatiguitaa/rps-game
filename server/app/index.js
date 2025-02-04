@@ -2,9 +2,9 @@ import express from "express"
 import { createServer } from "node:http"
 import path from "node:path"
 import { Server } from "socket.io"
-import { Player } from "./models/Player.js"
 import cookieParser from "cookie-parser"
 
+import { Player } from "./models/Player.js"
 import { Room } from "./models/Room.js"
 import { Movement } from "./models/Movement.js"
 import { Match } from "./models/Match.js"
@@ -17,93 +17,63 @@ const PORT = process.env.PORT ?? 3000
 
 const io = new Server(server)
 
-let rooms = []
+let rooms = new Map()
 
 function createRoom(socket) {
-    const roomId = Room.generateId(6, rooms)
+    const id = Room.generateId(rooms)
     
-    const room = new Room(roomId, socket.player)
+    const room = new Room(id, socket.player)
 
     socket.player.roomId = room.id
 
-    socket.join(room.id)
+    socket.join(id)
 
-    rooms.push(room)
+    rooms.set(id, room)
 
-    socket.emit("room-created", {id: room.id})
-}
-
-function deleteRoom(roomId) {
-    const roomIndex = rooms.findIndex(room => room.id == roomId)
-    
-    rooms.splice(roomIndex, 1)
+    socket.emit("room-created", {id})
 }
 
 function joinRoom(socket, id) {
-    const room = rooms.find(room => room.id == id)
+    const room = rooms.get(id)
     const player = socket.player
 
-    if (!room) return socket.emit("error", {error: "Room does not exists."})
-    else {
-        try {
-            if (player.roomId == room.id) throw new Error("You are already in this room.")
-            
-            const previousRoom = rooms.find(room => room.id == player.roomId)
+    try {
+        if (player.roomId == id) throw new Error("You are already in this room.")
 
-            if (previousRoom.players.length <= Room.MIN_PLAYERS) {
-                const previousRoomIndex = rooms.findIndex(room => room.id == previousRoom.id)
+        if (!room) throw new Error("Room does not exists.")
+        
+        const previousRoom = rooms.get(player.roomId)
 
-                rooms.splice(previousRoomIndex, 1)
-            }
-
-            room.players.push(player)
-            
-            socket.leave(previousRoom.id)
-
-            socket.join(room.id)
-            
-            player.roomId = id
-
-            if (previousRoom.players.length >= Room.MIN_PLAYERS) {
-                io.to(previousRoom.id).emit("room-leaved", {name: player.name})
-            }
-            
-            io.to(room.id).emit("room-joined", {
-                room: {
-                    id: room.id,
-                    players: room.players
-                },
-                player: {
-                    id: socket.id,
-                    name: player.name
-                }
-            })
+        if (!previousRoom.isFull()) {
+            rooms.delete(previousRoom.id)
         }
-        catch (error) {
-            socket.emit("error", {error: error.message})
+        else {
+            io.to(previousRoom.id).emit("room-leaved", {name: player.name})
         }
+
+        room.players.push(player)
+        
+        socket.leave(previousRoom.id)
+
+        socket.join(room.id)
+        
+        player.roomId = id
+        
+        io.to(room.id).emit("room-joined", {
+            room: {
+                id: room.id,
+                players: room.players
+            },
+            player: {
+                id: socket.id,
+                name: player.name
+            }
+        })
+    }
+    catch (error) {
+        socket.emit("error", {error: error.message})
     }
 }
-
-// function leaveRoom(socket) {
-//     const player = socket.player
-
-//     const room = rooms.find(r => r.id == player.roomId)
-
-//     try {
-//         if (room.players.length <= Room.MIN_PLAYERS) throw new Error("You can not leave the room with only one player.")
-        
-//         room.players.remove(player)
-
-//         socket.leave(room.id)
-
-//         io.to(room.id).emit("room-leaved", {name: player.name})
-
-//         createRoom(socket)
-//     } catch (error) {
-//         socket.emit("error", {error: error.message})
-//     }
-// }
 
 io.on("connection", socket => {
     let name = socket.handshake.auth.username
@@ -116,27 +86,24 @@ io.on("connection", socket => {
         joinRoom(socket, id)
     })
 
-    // socket.on("room-leave", () => {
-    //     createRoom(socket)
-    // })
-
     socket.on("match-start", async () => {
         const player = socket.player
-        const room = rooms.find(room => room.id === player.roomId)
+        const room = rooms.get(player.roomId)
         const match = room.match
 
         try {
-            if (room.players.length < Room.MAX_PLAYERS) throw new Error("There is not enough players to play.")
+            if (!room.isFull()) throw new Error("There is not enough players to play.")
             
             io.to(room.id).emit("match-started", {totalRounds: Match.MAX_ROUNDS})
+
             match.start()
 
             for (let i = 0; i < Match.MAX_ROUNDS; i++) {
-                if (!match.started) break
+                if (!match.started) return
 
                 io.to(room.id).emit("round-started", {roundNumber: i + 1, roundTime: Round.ROUND_TIME})
 
-                const roundWinnerId = await match.playRound()
+                const roundWinnerId = await match.playRound().catch()
 
                 if (!roundWinnerId) io.to(room.id).emit("round-tied", {roundNumber: match.currentRoundIndex + 1})
                 
@@ -147,10 +114,7 @@ io.on("connection", socket => {
                     
                     io.to(roundLoserId).emit("round-lost", {roundNumber: match.currentRoundIndex + 1})
                 }
-
             }
-
-            if (!match.started) return
 
             const matchWinnerId = match.winner(room.players)
             
@@ -158,14 +122,13 @@ io.on("connection", socket => {
 
             if (!matchWinnerId) return io.to(room.id).emit("match-tied")
             
-            const matchLoserId = room.players.find(player => player.id !== matchWinnerId).id
+            const matchLoser = room.players.find(player => player.id !== matchWinnerId)
         
             io.to(matchWinnerId).emit("match-won")
 
-            io.to(matchLoserId).emit("match-lost")
+            io.to(matchLoser.id).emit("match-lost")
 
         } catch (error) {
-            console.log(error)
             socket.emit("error", {error: error.message})
         }
         
@@ -173,14 +136,13 @@ io.on("connection", socket => {
 
     socket.on("round-movement", (choiceId) => {
         try {
-            const room = rooms.find(room => room.id === socket.player.roomId)
+            const player = socket.player
+            const room = rooms.get(player.roomId)
             const match = room.match
     
             if (!match.started) throw new Error("Match has not started yet.")
     
             const currentRound = match.rounds[match.currentRoundIndex]
-            const player = socket.player
-
             currentRound.movements.push(new Movement(player.id, choiceId))
 
         } catch (error) {
@@ -191,20 +153,19 @@ io.on("connection", socket => {
 
     socket.on("disconnect", () =>{
         const player = socket.player
-        const roomId = player.roomId
 
-        const room = rooms.find(room => room.id === roomId)
+        const room = rooms.get(player.roomId) 
 
-        if (room.players.length <= Room.MIN_PLAYERS) return deleteRoom(roomId)
+        if (!room.isFull()) return rooms.delete(player.roomId)
         
         room.players.remove(player)
         
-        io.to(roomId).emit("room-leaved", {name: player.name})
+        io.to(player.roomId).emit("room-leaved", {name: player.name})
 
         const match = room.match
 
         if (match.started) {
-            io.to(roomId).emit("match-won")
+            io.to(player.roomId).emit("match-won")
             match.finish()
         }
     })

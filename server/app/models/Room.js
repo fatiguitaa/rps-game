@@ -4,6 +4,7 @@ import { Match } from "./Match.js";
 export class Room {
     static MIN_PLAYERS = 1
     static MAX_PLAYERS = 2
+    static ID_LENGHT = 6
 
     constructor(id, creator) {
         this.id = id;
@@ -15,12 +16,12 @@ export class Room {
         return this.players.length === Room.MAX_PLAYERS
     }
 
-    static generateId(length, rooms) {
-        let id =  Math.random().toString(36).slice(2, length + 2)
+    static generateId(rooms) {
+        let id = Math.random().toString(36).slice(2, Room.ID_LENGHT + 2)
 
-        const alreadyExists = rooms.some(room => room.id === id)
+        const alreadyExists = rooms.has(id)
 
-        if (alreadyExists) id = this.generateId(length, rooms)
+        if (alreadyExists) id = Room.generateId(rooms)
 
         return id
     }

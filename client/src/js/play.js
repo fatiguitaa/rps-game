@@ -9,11 +9,6 @@ const socket = io({
     }
 })
 
-const self = {
-    id: undefined,
-    name: username
-}
-
 function displayErrorMessage(innerHTML) {
     const domMessages = $(".messages")
 
@@ -48,6 +43,24 @@ function displaySuccessMessage(innerHTML) {
 
 function displayEnemyInfo(enemy) {
     $("#enemy__name").textContent = enemy.name
+}
+
+function runTimer(seconds) {
+    const timer = setInterval(() => {
+        seconds--
+
+        if (seconds < 0) {
+            clearInterval(timer)
+            $(".timer__time").textContent = 10
+            return;
+        }
+        else if (seconds < 10) {
+            seconds = "0" + seconds
+        }
+        
+        $(".timer__time").textContent = seconds;
+        
+    }, 1000)
 }
 
 function disableChoices() {
@@ -104,10 +117,6 @@ function matchLost(text) {
     }, 3000);
 }
 
-socket.on("connect", () => {
-    self.id = socket.id
-})
-
 socket.on("room-created", ({id}) => {
     document.body.classList.remove("full")
 
@@ -115,9 +124,9 @@ socket.on("room-created", ({id}) => {
 })
 
 socket.on("room-joined", (event) => {
-    const enemy = event.room.players.find(player => player.id !== self.id)
+    const enemy = event.room.players.find(player => player.id !== socket.id)
 
-    if (event.player.id === self.id) {
+    if (event.player.id === socket.id) {
         $("#room__info__id").textContent = event.room.id
         displaySuccessMessage(`You just joined to room <span class="special">${event.room.id}</span>.`)
     }
@@ -169,18 +178,7 @@ socket.on("round-started", ({roundNumber, roundTime}) => {
 
     let seconds = roundTime / 1000
 
-    const timer = setInterval(() => {
-        seconds--
-
-        if (seconds < 0) {
-            clearInterval(timer)
-            $(".timer__time").textContent = 10
-            return;
-        }
-
-        $(".timer__time").textContent = seconds;
-        
-    }, 1000)
+    runTimer(seconds)
 })
 
 socket.on("round-won", ({roundNumber}) => {
